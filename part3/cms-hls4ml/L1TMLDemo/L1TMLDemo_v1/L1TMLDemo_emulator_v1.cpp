@@ -9,7 +9,8 @@ HLS4ML Emulator Class
 class L1TMLDemo_emulator_v1 : public hls4mlEmulator::Model {
 
 private:
-    static const int N_INPUT=2;  // TODO update this to real model
+    // Note: these need to match the defined model
+    static const int N_INPUT=26;
     static const int N_OUTPUT=1;
     input_t _input[N_INPUT];
     result_t _result[N_OUTPUT];
@@ -32,7 +33,7 @@ public:
   virtual void read_result(std::any result) {
     // copy result
     result_t *result_p = std::any_cast<result_t*>(result);
-    result_p[0] = _result;
+    *result_p = _result;
   }
   
 };
