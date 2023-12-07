@@ -4,18 +4,20 @@
 
 ## Setup
 
-This tutorial is designed to run on `lxplus` using a Python environment from CMSSW. In addition we install some extra Python packages, and we use Xilinx's Vivado HLS software from a container on /cvmfs. This tutorial is designed to get you working on the notebooks with minimal setup. For real ML@L1T development work we recommend using a high-memory, high single-core-performance PC with the latest Xilinx tools.
+This tutorial is designed to run on `lxplus8` using a Python environment from CMSSW. In addition we install some extra Python packages, and we use Xilinx's Vivado HLS software from a container on /cvmfs. This tutorial is designed to get you working on the notebooks with minimal setup. For real ML@L1T development work we recommend using a high-memory, high single-core-performance PC with the latest Xilinx tools.
+
+**Note** with the recent switch to `lxplus9` as the alias for `lxplus`, you need to specify `lxplus8` to run this tutorial!
 
 To set up the environment and launch the jupyter notebooks:
 
-From your laptop, open a terminal and use your CERN computing account to `ssh` to `lxplus`, e.g.:
+From your laptop, open a terminal and use your CERN computing account to `ssh` to `lxplus8`, e.g.:
 
 ```
-ssh <user>@lxplus.cern.ch
+ssh <user>@lxplus8.cern.ch
 ```
 
-Note which `lxplus` node your are connected to, e.g. `lxplus123.cern.ch`, we will need to refer to the exact server in a later step.
-From the terminal on `lxplus`, first clone this repository
+Note which `lxplus8` node your are connected to, e.g. `lxplus812.cern.ch`, we will need to refer to the exact server in a later step.
+From the terminal on `lxplus8`, first clone this repository
 
 ```
 git clone https://gitlab.cern.ch/fastmachinelearning/cms_mlatl1t_tutorial
@@ -41,13 +43,13 @@ The port may or may not be `8888`, depending on other users of the machine. Note
 Then from another terminal on your laptop, forward the port on lxplus to your laptop like this:
 
 ```
-ssh -N -f -L <local port>:localhost:<lxplus port> <user>@lxplus<node>.cern.ch
+ssh -N -f -L <local port>:localhost:<lxplus port> <user>@lxplus8<node>.cern.ch
 ```
 
 e.g.
 
 ```
-ssh -N -f -L 8888:localhost:8888 <user>@lxplus123.cern.ch
+ssh -N -f -L 8888:localhost:8888 <user>@lxplus812.cern.ch
 ```
 
 You made need to change the local port (left hand side) if you see a message like this:
