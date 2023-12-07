@@ -1,0 +1,11 @@
+# algorithm includes
+include -c NN nn.dep
+include -c Scaler scaler.dep
+src NNWrapper.vhd
+src ScalerWrapper.vhd
+src payload.vhd
+
+# emp fwk includes
+include -c emp-fwk:boards/serenity/dc_vu13p dc_vu13p_so2.dep
+src emp_project_decl.vhd
+#addrtab emp_payload.xml
