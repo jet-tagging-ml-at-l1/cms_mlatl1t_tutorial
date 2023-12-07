@@ -21,6 +21,8 @@ As of `hls4ml` `0.8.1`, when run outside of Vivado HLS, the C++ code loads the w
 
 This one liner will replace the `#define` that would cause the weights to be loaded from txt files with one that will load them from the header files when we compile instead.
 
+If you don't do this, when you `cmsRun` you will see a runtime error like `ERROR: file w2.txt does not exist`
+
 ```shell
 find $MLATL1T_DIR/part3/cms-hls4ml/L1TMLDemo/L1TMLDemo_v1/NN \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/#ifndef __SYNTHESIS__/#ifdef __HLS4ML_LOAD_TXT_WEIGHTS__/'
 ```
@@ -69,11 +71,24 @@ cp $MLATL1T_DIR/part3/cms-hls4ml/L1TMLDemo/L1TMLDemo_v1.so $CMSSW_BASE/src/L1Tri
 
 ## 7.
 
-Run the test config!
+Run the test config over signal and background!
 
 ```shell
 cd $CMSSW_BASE/src/L1Trigger/L1TMLDemo/test
-cmsRun demoL1TMLNtuple.py
+cmsRun demoL1TMLNtuple.py signal=True
+cmsRun demoL1TMLNtuple.py signal=False
 ```
 
+We run over the same datasets as part 1:
+- Signal: `/GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM`
+- Background: `/SingleNeutrino_E-10-gun/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v2/MINIAODSIM`
+
+This will produce the files
+- `L1TMLDemo_NanoAOD_signal.root`
+- `L1TMLDemo_NanoAOD_background.root`
+
 *Note* when developing your own models, you may unfortunately run into segmentation violations while developing. The most common reason is that the input and output data type set in the producer mismatch the types used by the model emulator. In this emulator workflow, this causes a runtime error rather than a compile time error.
+
+## 8.
+
+Run the notebook part3.ipynb

@@ -1,0 +1,3 @@
+/store/mc/Run3Summer22MiniAODv4/GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_v5-v2/50000/67062162-0b04-4738-b8ab-c31cddf64a1d.root
+/store/mc/Run3Summer22MiniAODv4/GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_v5-v2/50000/0a94d194-7c19-4d36-b540-fccacecbe60b.root
+/store/mc/Run3Summer22MiniAODv4/GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_v5-v2/40000/504487f5-0a4f-46b2-9c53-e6687362db4f.root

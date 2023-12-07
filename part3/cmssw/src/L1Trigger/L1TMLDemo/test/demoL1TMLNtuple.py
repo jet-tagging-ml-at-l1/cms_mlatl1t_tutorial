@@ -1,5 +1,21 @@
+# argparsing
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing('python')
+options.register('signal', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool)
+options.parseArguments()
+
 # import of standard configurations
 import FWCore.ParameterSet.Config as cms
+
+# load the model scales
+# note you should not really load these from a pkl file for real CMSSW
+import os
+import pickle
+scales_file = os.environ['MLATL1T_DIR'] + '/part1_outputs/hwScaler.pkl'
+scales = pickle.load(open(scales_file, 'rb'))
+# the standard scaler does (x - u) / s while we will do (x - u) * (1 / s) so invert s here
+scale = 1. / scales.scale_
+bias = scales.mean_
 
 process = cms.Process("l1tMLDemo")
 
@@ -13,36 +29,42 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(100_000)
 )
+
+filelist = 'files_signal.txt' if options.signal else 'files_background.txt'
+input_files = open(filelist).readlines()
 
 process.source = cms.Source (
     "PoolSource",
-    fileNames = cms.untracked.vstring('/store/relval/CMSSW_13_3_0_pre3/RelValMinBias_14TeV/GEN-SIM-DIGI-RAW/132X_mcRun3_2023_realistic_v4-v1/2580000/0911bb55-82fb-4a51-bb8f-be79f61b020d.root'),
+    fileNames = cms.untracked.vstring(input_files),
 )
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:startup', '')
 
 process.l1tDemoMLProducer = cms.EDProducer('L1TMLDemoProducer',
-    muToken    = cms.InputTag("simGmtStage2Digis"),
-    egToken    = cms.InputTag("simCaloStage2Digis"),
-    tauToken   = cms.InputTag("simCaloStage2Digis"),
-    jetToken   = cms.InputTag("simCaloStage2Digis"),
-    etSumToken = cms.InputTag("simCaloStage2Digis"),
+    muToken    = cms.InputTag("gmtStage2Digis:Muon"),
+    egToken    = cms.InputTag("caloStage2Digis:EGamma"),
+    tauToken   = cms.InputTag("caloStage2Digis:Tau"),
+    jetToken   = cms.InputTag("caloStage2Digis:Jet"),
+    etSumToken = cms.InputTag("caloStage2Digis:EtSum"),
     nMu = cms.uint32(2),
-    nEg = cms.uint32(2),
+    nEg = cms.uint32(8),
     nTau = cms.uint32(0),
-    nJet = cms.uint32(4),
-    model_so_path = cms.string("../data/L1TMLDemo_v1")
+    nJet = cms.uint32(8),
+    model_so_path = cms.string("../data/L1TMLDemo_v1"),
+    scale = cms.vdouble(*scale),
+    bias = cms.vdouble(*bias),
 )
 
 process.path = cms.Path(
     process.l1tDemoMLProducer
 )
 
+oname = 'L1TMLDemo_NanoAOD_signal.root' if options.signal else 'L1TMLDemo_NanoAOD_background.root'
 process.outnano = cms.OutputModule("NanoAODOutputModule",
-    fileName = cms.untracked.string("L1TMLDemo_NanoAOD.root"),
+    fileName = cms.untracked.string(oname),
     outputCommands = cms.untracked.vstring("drop *", "keep nanoaodFlatTable_*_*_*"),
     compressionLevel = cms.untracked.int32(4),
     compressionAlgorithm = cms.untracked.string("ZLIB"),

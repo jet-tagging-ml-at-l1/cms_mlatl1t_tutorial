@@ -47,8 +47,12 @@ private:
   unsigned nJet;
   unsigned nNNIn;
 
+  typedef ap_fixed<16,6,AP_RND_CONV,AP_SAT> scale_t;
+  typedef ap_fixed<16,6,AP_RND_CONV,AP_SAT> bias_t;
   // hls4ml emulator model path
   std::string model_so_path;
+  std::vector<scale_t> scale;
+  std::vector<bias_t> bias;
 
 };
 
@@ -64,10 +68,17 @@ L1TMLDemoProducer::L1TMLDemoProducer(const edm::ParameterSet& cfg){
   nTau = cfg.getParameter<unsigned>("nTau");
   nJet = cfg.getParameter<unsigned>("nJet");
   // total number of inputs to NN
-  nNNIn = 3 * (1 + nMu + nEG + nTau + nJet);
+  nNNIn = 2 + 3 * (nMu + nEG + nTau + nJet);
 
   // store the path to the .so file
   model_so_path = cfg.getParameter<std::string>("model_so_path");
+
+  // get the scaler parameters and cast them to fixed point types
+  std::vector<double> scale_double = cfg.getParameter<std::vector<double>>("scale");
+  std::transform(scale_double.begin(), scale_double.end(), std::back_inserter(scale), [](double s){ return (scale_t)s; });
+  // get the bias parameters and cast them to fixed point types
+  std::vector<double> bias_double = cfg.getParameter<std::vector<double>>("bias");
+  std::transform(bias_double.begin(), bias_double.end(), std::back_inserter(bias), [](double s){ return (bias_t)s; });
 
   // produce
   produces<nanoaod::FlatTable>("L1TMLDemo");
@@ -92,55 +103,59 @@ void L1TMLDemoProducer::produce(edm::StreamID id, edm::Event& iEvent, const edm:
   iEvent.getByToken(jetToken, jets);
   iEvent.getByToken(sumToken, sums);
 
-  // The unscaled inputs are hwInts apart from ET that is in GeV with 0.5 GeV LSB
+  // The unscaled inputs are hwInts
   // ap_fixed<14,13> is wide enough for all the ET, pT, eta, phi
   ap_fixed<14,13>* X_unscaled = new ap_fixed<14,13>[nNNIn];
+  // initialize to zeros
+  for(unsigned i = 0; i < nNNIn; i++){
+    X_unscaled[i] = 0;
+  }
 
   // fill the inputs
   unsigned ix = 0;
   // sums first, just find the MET
   for(unsigned i = 0; i < sums->size(0); i++){
     if(sums->at(0, i).getType() == l1t::EtSum::EtSumType::kMissingEt){
-      X_unscaled[ix++] = (float)(sums->at(0,i).hwPt())/2;
-      X_unscaled[ix++] = 0; // for eta
+      X_unscaled[ix++] = sums->at(0,i).hwPt();
       X_unscaled[ix++] = sums->at(0,i).hwPhi();
     }
   }
-  // muons next
-  ix=3 * ( 1 );
-  for(unsigned i = 0; i < std::min(nMu, muons->size(0)); i++){
-    X_unscaled[ix++] = (float)(muons->at(0, i).hwPt())/2;
-    X_unscaled[ix++] = muons->at(0, i).hwEta();
-    X_unscaled[ix++] = muons->at(0, i).hwPhi();
-  }
-  // egammas next
-  ix = 3 * ( 1 + nMu );
-  for(unsigned i = 0; i < std::min(nEG, egammas->size(0)); i++){
-    X_unscaled[ix++] = (float)(egammas->at(0, i).hwPt())/2;
-    X_unscaled[ix++] = egammas->at(0, i).hwEta();
-    X_unscaled[ix++] = egammas->at(0, i).hwPhi();
-  }
-  // taus next
-  ix = 3 * ( 1 + nMu + nEG );
-  for(unsigned i = 0; i < std::min(nTau, taus->size(0)); i++){
-    X_unscaled[ix++] = (float)(taus->at(0, i).hwPt())/2;
-    X_unscaled[ix++] = taus->at(0, i).hwEta();
-    X_unscaled[ix++] = taus->at(0, i).hwPhi();
-  }
-  // jets last
-  ix = 3 * ( 1 + nMu + nEG + nTau );
-  for(unsigned i = 0; i < std::min(nEG, jets->size(0)); i++){
-    X_unscaled[ix++] = (float)(jets->at(0, i).hwPt())/2;
+  // jets next
+  ix = 2 * ( 1 );
+  for(unsigned i = 0; i < std::min(nJet, jets->size(0)); i++){
+    X_unscaled[ix++] = jets->at(0, i).hwPt();
     X_unscaled[ix++] = jets->at(0, i).hwEta();
     X_unscaled[ix++] = jets->at(0, i).hwPhi();
   }
-
+  // egammas next
+  ix = 2 * ( 1 + nJet );
+  for(unsigned i = 0; i < std::min(nEG, egammas->size(0)); i++){
+    X_unscaled[ix++] = egammas->at(0, i).hwPt();
+    X_unscaled[ix++] = egammas->at(0, i).hwEta();
+    X_unscaled[ix++] = egammas->at(0, i).hwPhi();
+  }
+  // muons next
+  ix = 2 * ( 1 + nJet + nEG );
+  for(unsigned i = 0; i < std::min(nMu, muons->size(0)); i++){
+    X_unscaled[ix++] = muons->at(0, i).hwPt();
+    X_unscaled[ix++] = muons->at(0, i).hwEta();
+    X_unscaled[ix++] = muons->at(0, i).hwPhi();
+  }
+  // taus next
+  ix = 2 * ( 1 + nJet + nEG + nMu );
+  for(unsigned i = 0; i < std::min(nTau, taus->size(0)); i++){
+    X_unscaled[ix++] = taus->at(0, i).hwPt();
+    X_unscaled[ix++] = taus->at(0, i).hwEta();
+    X_unscaled[ix++] = taus->at(0, i).hwPhi();
+  }
 
   ap_fixed<16,7,AP_RND,AP_SAT>* X_scaled = new ap_fixed<16,7,AP_RND,AP_SAT>[nNNIn];
   // scale the inputs
   for(unsigned i = 0; i < nNNIn; i++){
-    X_scaled[i] = X_unscaled[i]; // placeholder
+    X_scaled[i] = (X_unscaled[i] - bias[i]) * scale[i];
+    //std::cout << X_scaled[i] << ",";
   }
+  //std::cout << std::endl;
 
   // load the NN emulator object
   hls4mlEmulator::ModelLoader loader(model_so_path);
