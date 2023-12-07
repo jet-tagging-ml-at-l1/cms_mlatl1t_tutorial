@@ -30,4 +30,3 @@ cd $SCRIPT_DIR
 # put the HLS tools on the PATH
 echo "ML@L1T Setup: prepending $SCRIPT_DIR/bin to PATH"
 export PATH=$SCRIPT_DIR/bin:$PATH
-export MLATL1T_DIR=$SCRIPT_DIR
