@@ -30,3 +30,6 @@ cd $SCRIPT_DIR
 # put the HLS tools on the PATH
 echo "ML@L1T Setup: prepending $SCRIPT_DIR/bin to PATH"
 export PATH=$SCRIPT_DIR/bin:$PATH
+
+# install pyarrow for parquet file handling
+pip3 install pyarrow
