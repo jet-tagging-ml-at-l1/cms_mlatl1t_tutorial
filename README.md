@@ -27,7 +27,8 @@ cd cms_mlatl1t_tutorial
 Setup the software environment and launch the Jupyter Hub with:
 
 ```
-bash start_notebooks.sh
+bash start_notebooks.sh # for bash
+# source start_notebooks.sh # for zsh
 ```
 
 Take note of the output:
