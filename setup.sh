@@ -3,6 +3,7 @@
 CMSSW_VERSION=CMSSW_13_3_0_pre3
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export MLATL1T_DIR=$SCRIPT_DIR
 
 # create CMSSW area if it doesn't exist, and cmsenv
 [ ! -d CMSSW_13_3_0_pre3 ] && echo "ML@L1T Setup: cmsrel $CMSSW_VERSION" && \
