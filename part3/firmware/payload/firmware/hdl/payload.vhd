@@ -34,10 +34,12 @@ end emp_payload;
 
 architecture rtl of emp_payload is
 
-  signal X_scaled     : std_logic_vector(895 downto 0) := (others => '0');
-  signal X_scaled_vld : std_logic := '0';
-  signal y            : std_logic_vector(12 downto 0) := (others => '0');
-  signal y_vld        : std_logic := '0';
+  signal X_scaled           : std_logic_vector(895 downto 0) := (others => '0');
+  signal X_scaled_vld       : std_logic := '0';
+  signal X_scaled_delay     : std_logic_vector(895 downto 0) := (others => '0');
+  signal X_scaled_vld_delay : std_logic := '0';
+  signal y                  : std_logic_vector(12 downto 0) := (others => '0');
+  signal y_vld              : std_logic := '0';
 
 begin
 
@@ -50,12 +52,16 @@ begin
     X_vld        => X_scaled_vld
   );
 
+  -- add a buffer between the scaler and NN to ease timing
+  X_scaled_delay <= X_scaled when rising_edge(clk);
+  X_scaled_vld_delay <= X_scaled_vld when rising_edge(clk);
+
   -- run the NN
   NNInstance : entity work.NNWrapper
   port map(
     clk      => clk_p,
-    X_scaled => X_scaled,
-    X_vld    => X_scaled_vld,
+    X_scaled => X_scaled_delay,
+    X_vld    => X_scaled_vld_delay,
     y        => y,
     y_vld    => y_vld
   );
