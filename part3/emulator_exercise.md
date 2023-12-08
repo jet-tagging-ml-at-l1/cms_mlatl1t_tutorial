@@ -85,8 +85,11 @@ We run over the same datasets as part 1:
 - Background: `/SingleNeutrino_E-10-gun/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v2/MINIAODSIM`
 
 This will produce the files
-- `L1TMLDemo_NanoAOD_signal.root`
-- `L1TMLDemo_NanoAOD_background.root`
+- `L1TMLDemo_NanoAOD_signal.root` 100000 signal events
+- `L1TMLDemo_NanoAOD_background.root` 100000 background events
+- `L1TMLDemo_NanoAOD_signal_patterns.root` 1000 signal events for firmware validation
+- `L1TMLDemoPatterns_in_0.txt` 1000 events pattern file for firmware validation (sim. and hardware input file)
+- `L1TMLDemoPatterns_out_0.txt` 1000 events pattern file for firmware validation (reference output file ie predictions)
 
 *Note* when developing your own models, you may unfortunately run into segmentation violations while developing. The most common reason is that the input and output data type set in the producer mismatch the types used by the model emulator. In this emulator workflow, this causes a runtime error rather than a compile time error.
 
