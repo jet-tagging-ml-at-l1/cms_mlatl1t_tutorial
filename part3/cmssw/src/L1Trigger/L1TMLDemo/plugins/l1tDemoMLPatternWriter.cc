@@ -23,6 +23,7 @@
 #include "hls4ml/emulator.h"
 
 #include <iostream>
+#include <sstream>
 
 class L1TMLDemoPatternWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
@@ -56,15 +57,43 @@ private:
   std::vector<bias_t> bias;
 
   bool write_patterns;
-  //l1t::demo::BoardDataWriter inFileWriter;
+  std::map<l1t::demo::LinkId, std::pair<l1t::demo::ChannelSpec, std::vector<size_t>>> inChannelSpec;
   std::map<l1t::demo::LinkId, std::pair<l1t::demo::ChannelSpec, std::vector<size_t>>> outChannelSpec;
 
+  l1t::demo::BoardDataWriter inFileWriter;
   l1t::demo::BoardDataWriter outFileWriter;
 
 };
 
 L1TMLDemoPatternWriter::L1TMLDemoPatternWriter(const edm::ParameterSet& cfg)
- : outChannelSpec{{{"y", 0}, {{1,0}, {0}}}}, 
+ : inChannelSpec{{{"MET", 0}, {{1,0}, {0}}},
+                 {{"jet", 1}, {{1,0}, {1}}},
+                 {{"jet", 2}, {{1,0}, {2}}},
+                 {{"jet", 3}, {{1,0}, {3}}},
+                 {{"jet", 4}, {{1,0}, {4}}},
+                 {{"jet", 5}, {{1,0}, {5}}},
+                 {{"jet", 6}, {{1,0}, {6}}},
+                 {{"jet", 7}, {{1,0}, {7}}},
+                 {{"jet", 8}, {{1,0}, {8}}},
+                 {{"eg", 9}, {{1,0}, {9}}},
+                 {{"eg", 10}, {{1,0}, {10}}},
+                 {{"eg", 11}, {{1,0}, {11}}},
+                 {{"eg", 12}, {{1,0}, {12}}},
+                 {{"eg", 13}, {{1,0}, {13}}},
+                 {{"eg", 14}, {{1,0}, {14}}},
+                 {{"eg", 15}, {{1,0}, {15}}},
+                 {{"eg", 112}, {{1,0}, {112}}},
+                 {{"mu", 113}, {{1,0}, {113}}},
+                 {{"mu", 114}, {{1,0}, {114}}}
+   },
+   outChannelSpec{{{"y", 0}, {{1,0}, {0}}}}, 
+   inFileWriter(l1t::demo::FileFormat::EMPv2,        // pattern file format
+                "L1TMLDemoPatterns_in",              // file name
+                "txt",                               // file extension
+                1,                                   // frames per BX
+                1,                                   // TMUX 
+                1024,                                // max lines per file
+                inChannelSpec),
    outFileWriter(l1t::demo::FileFormat::EMPv2,        // pattern file format
                  "L1TMLDemoPatterns_out",             // file name
                  "txt",                               // file extension
@@ -72,7 +101,7 @@ L1TMLDemoPatternWriter::L1TMLDemoPatternWriter(const edm::ParameterSet& cfg)
                  1,                                   // TMUX 
                  1024,                                // max lines per file
                  outChannelSpec)
- {
+  {
   // consume
   muToken = consumes<l1t::MuonBxCollection>(cfg.getParameter<edm::InputTag>("muToken"));
   egToken = consumes<l1t::EGammaBxCollection>(cfg.getParameter<edm::InputTag>("egToken"));
@@ -186,6 +215,7 @@ void L1TMLDemoPatternWriter::analyze(const edm::Event& iEvent, const edm::EventS
 
   // write the patterns
   if(write_patterns){
+    pack_inputs(X_unscaled);
     pack_outputs(y);
   }
 
@@ -195,10 +225,66 @@ void L1TMLDemoPatternWriter::beginJob(){
 }
 
 void L1TMLDemoPatternWriter::endJob(){
+  inFileWriter.flush();
   outFileWriter.flush();
 }
 
+// from https://github.com/cms-sw/cmssw/blob/CMSSW_13_3_0_pre3/DataFormats/L1TParticleFlow/interface/bit_encoding.h
+template <typename U, typename T>
+inline void pack_into_bits(U& u, unsigned int& start, const T& data) {
+  const unsigned int w = T::width;
+  u(start + w - 1, start) = data(w - 1, 0);
+  start += w;
+}
+
 void L1TMLDemoPatternWriter::pack_inputs(ap_fixed<14,13>* X_unscaled) {
+  std::vector<size_t> links{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 112, 113, 114};
+  l1t::demo::EventData eventDataIn;
+  ap_uint<64> bits = 0;
+  unsigned int start = 0;
+  // MET
+  pack_into_bits(bits, start, X_unscaled[0]);
+  pack_into_bits(bits, start, X_unscaled[1]);
+  std::vector<ap_uint<64>> bits_v;
+  bits_v.push_back(bits);
+  eventDataIn.add({"MET", links[0]}, bits_v);
+  for(unsigned i = 0; i < nJet; i++){
+    bits = 0;
+    start = 0;
+    pack_into_bits(bits, start, X_unscaled[2+3*i+0]); // ET
+    pack_into_bits(bits, start, X_unscaled[2+3*i+1]); // eta
+    pack_into_bits(bits, start, X_unscaled[2+3*i+2]); // phi
+    bits_v[0] = bits;
+    //std::ostringstream oss;
+    //oss << "jet" << std::to_string(i);
+    eventDataIn.add({"jet", links[1+i]}, bits_v);
+  }
+
+  for(unsigned i = 0; i < nEG; i++){
+    bits = 0;
+    start = 0;
+    pack_into_bits(bits, start, X_unscaled[2+3*nJet+3*i+0]); // ET
+    pack_into_bits(bits, start, X_unscaled[2+3*nJet+3*i+1]); // eta
+    pack_into_bits(bits, start, X_unscaled[2+3*nJet+3*i+2]); // phi
+    bits_v[0] = bits;
+    //std::ostringstream oss;
+    //oss << "eg" << std::to_string(i);
+    eventDataIn.add({"eg", links[1+nJet+i]}, bits_v);
+  }
+
+  for(unsigned i = 0; i < nMu; i++){
+    bits = 0;
+    start = 0;
+    pack_into_bits(bits, start, X_unscaled[2+3*(nJet+nEG)+3*i+0]); // ET
+    pack_into_bits(bits, start, X_unscaled[2+3*(nJet+nEG)+3*i+1]); // eta
+    pack_into_bits(bits, start, X_unscaled[2+3*(nJet+nEG)+3*i+2]); // phi
+    bits_v[0] = bits;
+    //std::ostringstream oss;
+    //oss << "mu" << std::to_string(i);
+    eventDataIn.add({"mu", links[1+nJet+nEG+i]}, bits_v);
+  }
+
+  inFileWriter.addEvent(eventDataIn);
 
 }
 
