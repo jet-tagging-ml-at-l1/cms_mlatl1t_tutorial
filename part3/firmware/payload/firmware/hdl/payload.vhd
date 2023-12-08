@@ -42,16 +42,16 @@ architecture rtl of emp_payload is
 begin
 
   -- scale the inputs
-  ScalerInstance : work.ScalerWrapper
+  ScalerInstance : entity work.ScalerWrapper
   port map(
     clk          => clk_p,
-    d            => d_delayed,
+    d            => d,
     X_scaled     => X_scaled,
-    X_scaled_vld => X_scaled_vld
+    X_vld        => X_scaled_vld
   );
 
   -- run the NN
-  NNInstance : work.NNWrapper
+  NNInstance : entity work.NNWrapper
   port map(
     clk      => clk_p,
     X_scaled => X_scaled,

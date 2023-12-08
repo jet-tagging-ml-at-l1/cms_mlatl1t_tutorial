@@ -30,5 +30,5 @@ mkdir -p $MLATL1T_DIR/part3/p2fwk-work/src/L1TMLDemo/Scaler/firmware/cfg
 cp $MLATL1T_DIR/part3/firmware/Scaler/hls/scaler_prj/solution1/syn/vhdl/* $MLATL1T_DIR/part3/p2fwk-work/src/L1TMLDemo/Scaler/firmware/hdl/
 for f in `ls $MLATL1T_DIR/part3/firmware/Scaler/hls/scaler_prj/solution1/syn/vhdl`
 do
-  echo "src $f" >> $MLATL1T_DIR/part3/p2fwk-work/src/L1TMLDemo/Scaler/firmware/cfg/scaler.dep
+  echo "src -l ScalerLib $f" >> $MLATL1T_DIR/part3/p2fwk-work/src/L1TMLDemo/Scaler/firmware/cfg/scaler.dep
 done
