@@ -75,8 +75,9 @@ Run the test config over signal and background!
 
 ```shell
 cd $CMSSW_BASE/src/L1Trigger/L1TMLDemo/test
-cmsRun demoL1TMLNtuple.py signal=True
-cmsRun demoL1TMLNtuple.py signal=False
+cmsRun demoL1TMLNtuple.py maxEvents=100000 signal=True
+cmsRun demoL1TMLNtuple.py maxEvents=100000 signal=False
+cmsRun demoL1TMLNtuple.py maxEvents=1000 signal=True # produce a pattern file for the hardware test
 ```
 
 We run over the same datasets as part 1:

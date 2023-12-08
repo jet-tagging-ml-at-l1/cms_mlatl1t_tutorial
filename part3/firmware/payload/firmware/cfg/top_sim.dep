@@ -1,0 +1,19 @@
+# emp fwk includes
+include -c emp-fwk:boards/testbench top.dep
+
+# algorithm includes
+
+src payload.vhd
+src ScalerWrapper.vhd
+src NNWrapper.vhd
+
+include -c NN nn.dep
+include -c Scaler scaler.dep
+
+src tb_decl.vhd
+src emp_project_decl.vhd
+# emp fwk includes
+include -c emp-fwk:boards/serenity/dc_vu13p device.dep packages_so2.dep
+
+
+@sim.library = "xil_defaultlib"

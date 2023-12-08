@@ -22,13 +22,13 @@ architecture rtl of NNWrapper is
 begin 
 
   -- make an instance of the Neural Network
-  NNInstance : NNLib.L1TMLDemo_v1
+  NNInstance : entity NNLib.L1TMLDemo_v1
   port map(
     ap_clk => clk,
     ap_rst => '0', -- never reset
     ap_start => '1', -- always run
-    input_1_V_ap_vld => X_scaled,
-    input_1_V => X_slv,
+    input_1_V => X_scaled,
+    input_1_V_ap_vld => X_vld,
     layer13_out_0_V => y,
     layer13_out_0_V_ap_vld => y_vld
   );

@@ -3,6 +3,7 @@
 <use name="FWCore/PluginManager"/>
 <use name="DataFormats/L1Trigger"/>
 <use name="DataFormats/NanoAOD"/>
+<use name="L1Trigger/DemonstratorTools"/>
 <use name="hls"/>
 <use name="hls4mlEmulatorExtras"/>
 <flags EDM_PLUGIN="1"/>
