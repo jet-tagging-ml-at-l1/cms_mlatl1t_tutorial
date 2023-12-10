@@ -2,6 +2,10 @@
 
 # CMS Machine Learning at Level 1 Trigger Tutorial
 
+This tutorial was originally presented on 8 December 2023 as part of the ML@L1T workshop. The indico event is [here](https://indico.cern.ch/event/1301711/timetable/#20231208.detailed).
+
+The slides and recordings of the session are also available from [CERNbox](https://cernbox.cern.ch/s/PKiCU3FFj1belPA).
+
 ## Setup
 
 This tutorial is designed to run on `lxplus8` using a Python environment from CMSSW. In addition we install some extra Python packages, and we use Xilinx's Vivado HLS software from a container on /cvmfs. This tutorial is designed to get you working on the notebooks with minimal setup. For real ML@L1T development work we recommend using a high-memory, high single-core-performance PC with the latest Xilinx tools.
